@@ -1,0 +1,12 @@
+# Sample YAML for client config
+name: "Dfarmadmin Client"
+version: "1.0"
+client:
+  organization: Dfarmadmin
+  credentialStore:
+    path: "./credstore/dfarmadmin/hfc-kvs"
+    cryptoStore:
+      path: "./credstore/dfarmadmin/hfc-cvs"
+  connection:
+    options:
+      grpc.keepalive_time_ms: 120000

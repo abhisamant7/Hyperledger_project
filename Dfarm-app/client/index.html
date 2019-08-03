@@ -1,0 +1,146 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hyperledger Fabric dFarm Application</title>
+    <link rel="icon" href="favicon.png" type="image/gif">
+
+    <!-- require jquery and bootstrap scripts -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.3/angular.min.js"></script>
+    
+    <!-- adding style here -->
+    <style type="text/css">
+      header{
+        background-color: lightgray;
+        font-size:20px;
+        padding:15px;
+      }
+      header, .form-group{
+        margin-bottom: 3%;
+      }
+      .form-group{
+        width:50%;
+      }
+      #body{
+        margin-left:3%;
+        margin-right:3%;
+      }
+      .form-control{
+        margin: 8px;
+      }
+      #right_header{
+        width:20%;
+        font-size:15px;
+        margin-right:0px;
+      }
+      #left_header{
+        margin-left:0;
+        width:40%;
+        display:inline-block;
+      } 
+      #id {
+        width:49%;
+        display: inline-block;
+      }
+      table {
+          font-family: arial, sans-serif;
+          border-collapse: collapse;
+          width: 100%;
+      }
+      td, th {
+          border: 1px solid #dddddd;
+          text-align: left;
+          padding: 8px;
+      }
+      tr:nth-child(even) {
+          background-color: #dddddd;
+      }
+    </style>
+  </head>
+  <body ng-app="application" ng-controller="appController">
+    <header>
+      <div id="left_header">Hyperledger Fabric dFarm Application</div>
+      <i id="right_header">Example Blockchain Application for Introduction to Hyperledger Fabric LFS171x</i>
+    </header>
+
+    <div id="body">
+      <div class="form-group">
+        <label>Query All Produce </label>
+        <p><input id="queryAllProduce" type="submit" value="Query" class="btn btn-primary" ng-click="queryAllProduce()"></p>
+      </div>
+ 
+      <table id="all_produce" class="table" align="center">
+
+        <tr>
+          <th>ID</th>
+          <th>Timestamp</th>
+          <th>Owner</th>
+          <th>Catch Location <br>(Longitude, Latitude)</th>
+          <th>Vessel</th>
+        </tr>
+
+        <tr ng-repeat="produce in all_produce">
+          <td>{{produce.Key}}</td>
+          <td>{{produce.timestamp}}</td>
+          <td>{{produce.owner}}</td>
+          <td>{{produce.location}}</td>
+          <td>{{produce.vessel}}</td>
+        </tr>
+      </table>
+
+      <div class="form-group">
+        <label>Query a Specific Produce Catch</label><br>
+        <h5 style="color:red;margin-bottom:2%" id="error_query">Error: Please enter a valid Produce Id</h5>
+        
+        Enter a catch number: <input id="createName" class="form-control" type="text" placeholder="Ex: 3" ng-model="produce_id">
+        <input id="querySubmit" type="submit" value="Query" class="btn btn-primary" ng-click="queryProduce()">
+      </div>
+
+      <table id="query_produce" class="table" align="center">
+
+        <tr>
+          <th>Timestamp</th>
+          <th>Owner</th>
+          <th>Location <br>(Longitude, Latitude)</th>
+          <th>Vessel</th>
+        </tr>
+
+        <tr>
+          <td>{{query_produce.timestamp}}</td>
+          <td>{{query_produce.owner}}</td>
+          <td>{{query_produce.location}}</td>
+          <td>{{query_produce.vessel}}</td>
+        </tr>
+      </table>
+
+      <div class="form-group">
+        <label>Create Produce Record</label>
+        <h5 style="color:green;margin-bottom:2%" id="success_create">Success! Tx ID: {{create_produce}}</h5>
+        <br>
+        Enter catch id: <input class="form-control" type="text" placeholder="Ex: 11" ng-model="produce.id">
+        Enter name of vessel: <input class="form-control" type="text" placeholder="Ex: 0239L" ng-model="produce.vessel">
+        Enter longitude: <input id="createName" class="form-control" type="text" placeholder="Ex: 28.012" ng-model="produce.longitude"> 
+        Enter latitude: <input id="createName" class="form-control" type="text" placeholder="Ex: 150.405" ng-model="produce.latitude">
+        Enter timestamp: <input class="form-control" type="text" placeholder="Ex: 4982342301" ng-model="produce.timestamp">
+        Enter name of owner: <input class="form-control" type="text" placeholder="Ex: Hansel" ng-model="produce.owner">
+        <input id="createSubmit" type="submit" value="Create" class="btn btn-primary" ng-click="recordProduce()"> 
+      </div>
+
+      <div class="form-group">
+        <label>Change Produce Owner</label><br>
+        <h5 style="color:green;margin-bottom:2%" id="success_holder">Success! Tx ID: {{change_holder}}</h5>
+        <h5 style="color:red;margin-bottom:2%" id="error_holder">Error: Please enter a valid Produce Id</h5>
+        Enter a catch id between 1 and 10: <input class="form-control" name="assetSelect" placeholder="Ex: 1" ng-model="owner.id">
+        Enter name of new owner: <input class="form-control" name="assetSelect" placeholder="Ex: Barry" ng-model="owner.name">
+        <input id="transferSubmit" type="submit" value="Change" class="btn btn-primary" ng-click="changeHolder()">
+      </div>
+
+    </div>
+  </body>
+    <!-- requiring the angular page -->
+    <script type="text/javascript" src="app.js"> </script>
+</html>

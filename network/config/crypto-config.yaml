@@ -1,0 +1,40 @@
+# Defines three organizations
+#  - Orderer organization
+#  - Org1  = Single peer organization
+#    Uses the "Specs" to declare the peers instead of Template
+#  - Org2  = Another peer organization
+# SOLUTION to the exercise
+
+##### Orderer for dfarmadmin
+OrdererOrgs:
+  - Name: Orderer
+    Domain: dfarmadmin.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+      
+#### Peers for dfarmadmin
+PeerOrgs:
+  # Peer configuration for DFARMADMIN
+  - Name: Dfarmadmin
+    Domain: dfarmadmin.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: dfarmadmin-peer1
+        CommonName: dfarmadmin-peer1
+    Users:
+      Count: 1
+
+  # Peer configuration for Dfarmretail
+  - Name: Dfarmretail
+    Domain: dfarmretail.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: dfarmretail-peer1
+        CommonName: dfarmretail-peer1
+    Users:
+      Count: 1
+
+
+
+      

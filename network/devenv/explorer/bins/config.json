@@ -1,0 +1,96 @@
+{
+  "network-configs": {
+    "network-1": {
+      "version": "1.0",
+      "clients": {
+        "client-1": {
+          "tlsEnable": false,
+          "organization": "DfarmadminMSP",
+          "channel": "dfarmchannel",
+          "credentialStore": {
+            "path": "./tmp/credentialStore_Org1/credential",
+            "cryptoStore": {
+              "path": "./tmp/credentialStore_Org1/crypto"
+            }
+          }
+        }
+      },
+      "channels": {
+        "dfarmchannel": {
+          "peers": {
+            "dfarmadmin-peer1.dfarmadmin.com": {},
+            "dfarmretail-peer1.dfarmretail.com": {}
+          },
+          "connection": {
+            "timeout": {
+              "peer": {
+                "endorser": "6000",
+                "eventHub": "6000",
+                "eventReg": "6000"
+              }
+            }
+          }
+        }
+      },
+      "organizations": {
+        "DfarmadminMSP": {
+          "mspid": "DfarmadminMSP",
+          "fullpath": false,
+          "adminPrivateKey": {
+            "path": "/vagrant/network/crypto/crypto-config/peerOrganizations/dfarmadmin.com/users/Admin@dfarmadmin.com/msp/keystore"
+          },
+          "signedCert": {
+            "path": "/vagrant/network/crypto/crypto-config/peerOrganizations/dfarmadmin.com/users/Admin@dfarmadmin.com/msp/signcerts"
+          }
+        },
+        "DfarmretailMSP": {
+          "mspid": "DfarmretailMSP",
+          "adminPrivateKey": {
+            "path": "/vagrant/network/crypto/crypto-config/peerOrganizations/dfarmretail.com/users/Admin@dfarmretail.com/msp/keystore"
+          }
+        },
+        "OrdererMSP": {
+          "mspid": "OrdererMSP",
+          "adminPrivateKey": {
+            "path": "/vagrant/network/crypto/crypto-config/ordererOrganizations/dfarmadmin.com/users/Admin@dfarmadmin.com/msp/keystore"
+          }
+        }
+      },
+      "peers": {
+        "dfarmadmin-peer1.dfarmadmin.com": {
+          "url": "grpc://dfarmadmin-peer1.dfarmadmin.com:7051",
+          "tlsCACerts": {
+            "path": "/home/vagrant/bins/cert/ca.crt"
+          },
+          "eventUrl": "grpc://dfarmadmin-peer1.dfarmadmin.com:7053",
+          "grpcOptions": {
+            "ssl-target-name-override": "dfarmadmin-peer1.dfarmadmin.com"
+          }
+        },
+        "dfarmretail-peer1.dfarmretail.com": {
+          "url": "grpc://dfarmretail-peer1.dfarmretail.com:8051",
+          "tlsCACerts": {
+            "path": "/home/vagrant/bins/cert/ca.crt"
+          },
+          "eventUrl": "grpc://dfarmretail-peer1.dfarmretail.com:8053",
+          "grpcOptions": {
+            "ssl-target-name-override": "dfarmretail-peer1.dfarmretail.com"
+          }
+        }
+      },
+      "orderers": {
+        "orderer.dfarmadmin.com": {
+          "url": "grpc://orderer.dfarmadmin.com:7050"
+        }
+      },
+      "certificateAuthorities": {
+        "ca.server.com": {
+          "url": "http://localhost:7054"
+        }
+      }
+    },
+    "network-2": {}
+  },
+  "configtxgenToolPath": "/usr/local/bin",
+  "license": "Apache-2.0"
+}

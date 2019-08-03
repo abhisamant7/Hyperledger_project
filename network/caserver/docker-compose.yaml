@@ -1,0 +1,220 @@
+version: '2'
+
+networks:
+  dfarm:
+
+
+services:
+#ca 
+  ca.dfarmadmin.com:
+    image: hyperledger/fabric-ca
+    environment:
+      - FABRIC_CA_HOME=/var/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca.dfarmadmin.com
+      - FABRIC_CA_SERVER_CA_CERTFILE=/var/hyperledger/fabric-ca-server-config/localhost-7054.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/var/hyperledger/fabric-ca-server-config/162775ee8805689b59976ed663539b5c015f7c475040ed60094cc64cd9f816bc_sk
+    ports:
+      - "7054:7054"
+    command: sh -c 'fabric-ca-server start -b admin:adminpw'
+    volumes:
+      - ${PWD}/caserver/admin/msp:/var/hyperledger/fabric-ca-server-config
+    container_name: ca.dfarmadmin.com
+    networks:
+      - dfarm
+
+
+  # root.caserver.com:
+  #   container_name: root.caserver.com
+  #   hostname: root
+  #   domainname: caserver.com
+  #   image: hyperledger/fabric-ca:$IMAGE_TAG
+  #   environment:
+  #     - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+  #     - FABRIC_CA_SERVER_CA_NAME=root.caserver
+  #     - FABRIC_CA_SERVER_TLS_ENABLED=false
+  #     # - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca.org1.example.com-cert.pem
+  #     # - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/CA1_PRIVATE_KEY
+  #   ports:
+  #     - "7054:7054"
+  #   command: sh -c 'fabric-ca-server start --cfg.identities.allowremove --cfg.affiliations.allowremove' 
+  #   volumes:
+  #     - ${PWD}/server:/etc/hyperledger/fabric-ca-server
+    
+  #   networks:
+  #     - dfarm
+
+
+  # Orderer
+  orderer.dfarmadmin.com:
+    container_name: orderer.dfarmadmin.com
+    image: hyperledger/fabric-orderer:$IMAGE_TAG
+    environment:
+      - FABRIC_CFG_PATH=/var/hyperledger/config
+      # - ORDERER_GENERAL_LOGLEVEL=DEBUG
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=orderer.dfarmadmin.com
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/genesis/dfarm-genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/msp
+      - ORDERER_FILELEDGER_LOCATION=/var/ledger
+    working_dir: $HOME
+    command: orderer
+    volumes:
+    # Folder with genesis block
+    - ${PWD}/config/orderer:/var/hyperledger/genesis
+    # Map the folder with MSP for orderer
+    - ${PWD}/client/orderer/orderer//msp:/var/hyperledger/msp
+    # Map the current folder to cfg
+    - ${PWD}/config/orderer:/var/hyperledger/config
+    - ${HOME}/ledgers/ca/orderer.dfarmadmin.com:/var/ledger
+    ports:
+      - 7050:7050
+    networks:
+      - dfarm
+
+  # Dfarmadmin peer1
+  dfarmadmin-peer1.dfarmadmin.com:
+    container_name: dfarmadmin-peer1.dfarmadmin.com
+    image: hyperledger/fabric-peer:$IMAGE_TAG
+    environment:
+      - FABRIC_CFG_PATH=/var/hyperledger/config
+      # - CORE_LOGGING_LEVEL=debug
+      - FABRIC_LOGGING_SPEC=DEBUG
+
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_dfarm
+
+      - CORE_PEER_ID=dfarmadmin-peer1.dfarmadmin.com
+      # - CORE_PEER_LISTENADDRESS=dfarmretail-peer1.dfarmretail.com:7051
+      - CORE_PEER_ADDRESS=dfarmadmin-peer1.dfarmadmin.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=dfarmadmin-peer1.dfarmadmin.com:7051
+      # - CORE_PEER_ADDRESS=0.0.0.0:7051
+      # - CORE_PEER_GOSSIP_EXTERNALENDPOINT=0.0.0.0:7051
+
+      - CORE_PEER_LOCALMSPID=DfarmadminMSP
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/msp
+      - CORE_PEER_TLS_ENABLED=false
+      # - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      # - CORE_PEER_GOSSIP_ORGLEADER=false
+      # - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_FILESYSTEMPATH=/var/ledger
+    working_dir: $HOME
+    # command: peer node start --peer-chaincodedev=true
+    command: peer node start
+
+    volumes:
+      # Folder with channel create tx file
+      - ${PWD}/config:/var/hyperledger/channeltx
+      # Map the folder with MSP for Peer
+      - ${PWD}/client/dfarmadmin/peer1/msp:/var/hyperledger/msp
+      # Map the current folder to cfg
+      - ${PWD}/config:/var/hyperledger/config
+      - /var/run/:/host/var/run/
+      # Ledger folder for the peer
+      - ${HOME}/ledgers/ca/dfarmadmin-peer1.dfarmadmin.com/:/var/ledger
+    depends_on: 
+      - orderer.dfarmadmin.com
+    ports:
+      - 7051:7051
+      - 7052:7052
+      - 7053:7053
+    networks:
+      - dfarm
+
+  # Dfarmretail peer1
+  dfarmretail-peer1.dfarmretail.com:
+    container_name: dfarmretail-peer1.dfarmretail.com
+    image: hyperledger/fabric-peer:$IMAGE_TAG
+    environment:
+      - FABRIC_CFG_PATH=/var/hyperledger/config
+      # - CORE_LOGGING_LEVEL=debug
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_CHAINCODE_LOGGING_LEVEL=info
+
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=${COMPOSE_PROJECT_NAME}_dfarm
+
+      - CORE_PEER_ID=dfarmretail-peer1.dfarmretail.com
+      - CORE_PEER_ADDRESS=dfarmretail-peer1.dfarmretail.com:8051
+      # - CORE_PEER_LISTENADDRESS=dfarmretail-peer1.dfarmretail.com:8051
+      - CORE_PEER_LISTENADDRESS=dfarmretail-peer1.dfarmretail.com:8051
+      - CORE_PEER_CHAINCODELISTENADDRESS=dfarmretail-peer1.dfarmretail.com:8052
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=dfarmretail-peer1.dfarmretail.com:8051
+      - CORE_PEER_LOCALMSPID=DfarmretailMSP
+      - CORE_PEER_MSPCONFIGPATH=/var/hyperledger/msp
+      - CORE_PEER_TLS_ENABLED=false
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb:5984
+      # - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      # - CORE_PEER_GOSSIP_ORGLEADER=false
+      # - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_FILESYSTEMPATH=/var/ledger
+    working_dir: $HOME
+    # command: peer node start --peer-chaincodedev=true
+    command: peer node start
+
+    volumes:
+      # Folder with channel create tx file
+      - ${PWD}/config:/var/hyperledger/channeltx
+      # Map the folder with MSP for Peer
+      - ${PWD}/client/dfarmretail/peer1/msp:/var/hyperledger/msp
+      # Map the current folder to cfg
+      - ${PWD}/config:/var/hyperledger/config
+      - /var/run/:/host/var/run/
+      # Ledger folder for the peer
+      - ${HOME}/ledgers/ca/dfarmretail-peer1.dfarmretail.com:/var/ledger
+    depends_on: 
+      - orderer.dfarmadmin.com
+    ports:
+      - 8051:8051
+      - 8052:8052
+      - 8053:8053
+    networks:
+      - dfarm
+
+  couchdb:
+    container_name: couchdb
+    image: hyperledger/fabric-couchdb
+    # Populate the COUCHDB_USER and COUCHDB_PASSWORD to set an admin user and password
+    # for CouchDB.  This will prevent CouchDB from operating in an "Admin Party" mode.
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+    ports:
+      - 5984:5984
+    networks:
+      - dfarm
+
+   
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools
+    tty: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=info
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=dfarmadmin-peer1.dfarmadmin.com:7051
+      - CORE_PEER_LOCALMSPID=DfarmadminMSP
+      #- CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+      -  CORE_PEER_MSPCONFIGPATH=/var/hyperledger/msp
+      - CORE_CHAINCODE_KEEPALIVE=10
+    working_dir:  $HOME
+    command: /bin/bash
+    volumes:
+        - /var/run/:/host/var/run/
+        - ./../chaincode/:/opt/gopath/src/github.com/
+        - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+    networks:
+        - dfarm
+    #depends_on:
+    #  - orderer.example.com
+    #  - peer0.org1.example.com
+    #  - couchdb   
+      
+
+  

@@ -1,0 +1,65 @@
+{
+	"name": "dev-network",
+	"description": "A development enviornment setup",
+	"version": "1.0",
+	"organizations": {
+		"Dfarmadmin": {
+			"mspid": "DfarmadminMSP",
+			"peers": [
+				"dfarmadmin-peer1.dfarmadmin.com"
+			]
+		},
+		"Dfarmretail": {
+			"mspid": "DfarmretailMSP",
+			"peers": [
+				"dfarmretail-peer1.dfarmretail.com"
+			]
+		}
+	},
+	"channels": {
+		"dfarmchannel": {
+			"orderers": [
+				"orderer.dfarmadmin.com"
+			],
+			"peers": {
+				"dfarmadmin-peer1.dfarmadmin.com": {
+					"endorsingPeer": true,
+					"chaincodeQuery": true,
+					"ledgerQuery": true,
+					"eventSource": true
+				},
+				"dfarmretail-peer1.dfarmadmin.com": {
+					"endorsingPeer": false,
+					"chaincodeQuery": true,
+					"ledgerQuery": true,
+					"eventSource": false
+				}
+			}
+		}
+	},
+	"orderers": {
+		"orderer.dfarmadmin.com": {
+			"url": "grpc://localhost:7050",
+			"grpcOptions": {
+				"ssl-target-name-override": "orderer.dfarmadmin.com"
+			}
+		}
+	},
+	"peers": {
+		"dfarmadmin-peer1.dfarmadmin.com": {
+			"url": "grpc://127.0.0.1:7051"
+		},
+		"dfarmretail-peer1.dfarmretail.com": {
+			"url": "grpc://localhost:8051"
+		}
+	},
+"certificateAuthorities": {
+    "ca.dfarmadmin.com": {
+        "url": "grpc://localhost:7054",
+        "grpcOptions": {
+            "ssl-target-name-override": "ca.dfarmadmin.com"
+        }
+       
+    }
+  }
+}
